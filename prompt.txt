@@ -1,0 +1,3 @@
+Write a working tic tac toe game with html, CSS and JavaScript. No external dependencies. The output should be a single file. Do not add Todo comments. Do not leave empty methods to fill. Generate complete working game. Have a title for the website as TIC TAC TOE in bold H1. The game should load in the middle of the page. Add animation when the user wins the game. 
+
+The game should be system vs user. One end computer play. There should be an option to choose difficulty level. Easy, medium and hard. based on that the computer or system adjust the playing. Also When the user wins the game balloons should pop in the screen for 30 seconds. 
