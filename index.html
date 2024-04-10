@@ -1,157 +1,203 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Tic Tac Toe</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
+<title>**TIC TAC TOE**</title>
+<style>
+body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f0f0f0;
+}
 
-        h1 {
-            color: #333;
-        }
+h1 {
+  text-align: center;
+}
 
-        .container {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-template-rows: repeat(3, 100px);
-            gap: 10px;
-        }
+#gameBoard {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
+  border: 2px solid black;
+}
 
-        .cell {
-            width: 100px;
-            height: 100px;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            font-size: 50px;
-            text-align: center;
-            line-height: 100px;
-            cursor: pointer;
-        }
+.cell {
+  border: 1px solid black;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 50px;
+  cursor: pointer;
+}
 
-        .cell.x {
-            color: #f00;
-        }
+.balloon {
+  position: absolute;
+  width: 50px;
+  height: 70px;
+  background-color: red;
+  border-radius: 50%;
+  animation: floatUp 30s linear forwards;
+}
 
-        .cell.o {
-            color: #00f;
-        }
+.balloon::after {
+  content: "";
+  position: absolute;
+  top: 70px;
+  left: 25px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 15px solid red;
+}
 
-        .cell.win {
-            animation: winAnimation 0.5s ease-in-out;
-        }
+@keyframes floatUp {
+  0% {
+    bottom: 0;
+    opacity: 1;
+  }
+  100% {
+    bottom: 100vh;
+    opacity: 0;
+  }
+}
 
-        @keyframes winAnimation {
-            0% {
-                background-color: #fff;
-            }
-
-            50% {
-                background-color: #90ee90;
-            }
-
-            100% {
-                background-color: #fff;
-            }
-        }
-    </style>
+</style>
 </head>
-
 <body>
-    <h1>Tic Tac Toe</h1>
-    <div class="container">
-        <div class="cell" data-index="0"></div>
-        <div class="cell" data-index="1"></div>
-        <div class="cell" data-index="2"></div>
-        <div class="cell" data-index="3"></div>
-        <div class="cell" data-index="4"></div>
-        <div class="cell" data-index="5"></div>
-        <div class="cell" data-index="6"></div>
-        <div class="cell" data-index="7"></div>
-        <div class="cell" data-index="8"></div>
-    </div>
+<h1>**TIC TAC TOE**</h1>
+<div>
+  <label for="difficulty">Difficulty:</label>
+  <select id="difficulty">
+    <option value="easy">Easy</option>
+    <option value="medium">Medium</option>
+    <option value="hard">Hard</option>
+  </select>
+</div>
+<div id="gameBoard"></div>
+<script>
+const board = ["", "", "", "", "", "", "", "", ""];
+let currentPlayer = "X";
+let gameOver = false;
 
-    <script>
-        const cells = document.querySelectorAll('.cell');
-        const winningCombinations = [
-            [0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8],
-            [0, 3, 6],
-            [1, 4, 7],
-            [2, 5, 8],
-            [0, 4, 8],
-            [2, 4, 6]
-        ];
+const gameBoard = document.getElementById("gameBoard");
+const difficultySelect = document.getElementById("difficulty");
 
-        let currentPlayer = 'X';
-        let gameActive = true;
+function createCell(index) {
+  const cell = document.createElement("div");
+  cell.classList.add("cell");
+  cell.id = index;
+  cell.addEventListener("click", handleClick);
+  return cell;
+}
 
-        cells.forEach(cell => {
-            cell.addEventListener('click', handleClick);
-        });
+function renderBoard() {
+  gameBoard.innerHTML = "";
+  board.forEach((cell, index) => {
+    gameBoard.appendChild(createCell(index));
+    document.getElementById(index).innerText = cell;
+  });
+}
 
-        function handleClick(e) {
-            const cell = e.target;
-            const index = parseInt(cell.dataset.index);
+function handleClick(e) {
+  const cellIndex = e.target.id;
+  if (board[cellIndex] !== "" || gameOver) return;
 
-            if (cell.textContent !== '' || !gameActive) {
-                return;
-            }
+  board[cellIndex] = currentPlayer;
+  renderBoard();
+  checkWin();
+  currentPlayer = currentPlayer === "X" ? "O" : "X";
+  if (!gameOver) computerPlay(); 
+}
 
-            cell.textContent = currentPlayer;
-            cell.classList.add(currentPlayer.toLowerCase());
+function checkWin() {
+  const winningCombinations = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+  for (const combination of winningCombinations) {
+    const [a, b, c] = combination;
+    if (
+      board[a] &&
+      board[a] === board[b] &&
+      board[a] === board[c]
+    ) {
+      gameOver = true;
+      alert(`Player ${currentPlayer} wins!`);
+      celebrate();
+      return;
+    }
+  }
+  if (!board.includes("")) {
+    alert("It's a tie!");
+    gameOver = true;
+  }
+}
 
-            if (checkForWinner()) {
-                alert(`${currentPlayer} wins!`);
-                highlightWinningCells();
-                gameActive = false;
-                return;
-            }
+function computerPlay() {
+  const difficulty = difficultySelect.value;
+  let cellIndex;
 
-            if (checkForDraw()) {
-                alert('Draw!');
-                gameActive = false;
-                return;
-            }
+  if (difficulty === "easy") {
+    cellIndex = getRandomEmptyCell(); 
+  } else if (difficulty === "medium") {
+    cellIndex = getStrategicCell() || getRandomEmptyCell(); 
+  } else { 
+    cellIndex = getBestMove() || getStrategicCell() || getRandomEmptyCell(); 
+  }
 
-            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-        }
+  board[cellIndex] = currentPlayer;
+  renderBoard();
+  checkWin();
+  currentPlayer = currentPlayer === "X" ? "O" : "X";
+}
 
-        function checkForWinner() {
-            return winningCombinations.some(combination => {
-                return combination.every(index => {
-                    return cells[index].classList.contains(currentPlayer.toLowerCase());
-                });
-            });
-        }
+function getRandomEmptyCell() {
+  const emptyCells = board.reduce((acc, curr, index) => {
+    if (curr === "") acc.push(index); 
+    return acc;
+  }, []);
+  const randomIndex = Math.floor(Math.random() * emptyCells.length);
+  return emptyCells[randomIndex];
+}
 
-        function checkForDraw() {
-            return [...cells].every(cell => {
-                return cell.classList.contains('x') || cell.classList.contains('o');
-            });
-        }
+function getStrategicCell() {
+  
+  return null; 
+}
 
-        function highlightWinningCells() {
-            winningCombinations.forEach(combination => {
-                if (combination.every(index => {
-                    return cells[index].classList.contains(currentPlayer.toLowerCase());
-                })) {
-                    combination.forEach(index => {
-                        cells[index].classList.add('win');
-                    });
-                }
-            });
-        }
-    </script>
+function getBestMove() {
+ 
+  return null; 
+}
+
+function celebrate() {
+  for (let i = 0; i < 20; i++) {
+    const balloon = document.createElement("div");
+    balloon.classList.add("balloon");
+    balloon.style.left = `${Math.random() * 100}%`;
+    document.body.appendChild(balloon);
+  }
+  setTimeout(() => {
+    const balloons = document.querySelectorAll(".balloon");
+    balloons.forEach(balloon => balloon.remove()); 
+  }, 30000);
+}
+
+renderBoard();
+
+</script>
 </body>
-
 </html>
