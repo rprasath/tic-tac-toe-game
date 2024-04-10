@@ -255,6 +255,12 @@
       }
 
       function getMediumMove() {
+
+        let random = Math.floor(Math.random() * 10);
+        if(random < 5) {
+          return getRandomMove();
+        }
+
         // Try to win, then block, then random
         let move = getBestMove(board, "O");
         if (move === null) {
