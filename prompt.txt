@@ -1,14 +1,29 @@
-Write a working tic tac toe game with html, CSS and JavaScript. No external dependencies. The output should be a single file. Do not add Todo comments. Do not leave empty methods to fill. Generate complete working game. Have a title for the website as TIC TAC TOE in bold H1. The game should load in the middle of the page. Add animation when the user wins the game. 
+Write a working tic tac toe game with html, CSS and JavaScript. No external dependencies. 
+The output should be a single file. 
+Do not add Todo comments. 
+Do not leave empty methods to fill. 
+Generate complete working game. 
+Have a title for the website as TIC TAC TOE in bold H1. 
+The game should load in the middle of the page. 
 
-The game should be system vs user. One end computer play. There should be an option to choose difficulty level. Easy, medium and hard. based on that the computer or system adjust the playing. Also When the user wins the game balloons should pop in the screen for 30 seconds. 
+The game should be system vs user. 
+One end computer play. 
+There should be an option to choose difficulty level. Easy, medium and hard. 
+based on that the computer or system adjust the playing. 
 
-Note:
+Rules:
 1. The drop down to select the difficulty level should be on the right side of the game. It should have nice style.
 2. The game should be responsive and work on mobile and desktop.
 3. Should be accessible.
-4. The game should have reset button.
-5. Add a timer to the game User should pick in 30 seconds. Add a coundown above the board for each step.
-6. Add a score board. X wins, O wins, Draws.
-7. Add sound effects for the balloons popping. Hundreds of balloons should pop with sparkling effects.
-8. Add a button to turn off the sound.
-9. Save the state of the game in local storage. When the user refresh the page the game should continue from where it was left.
+4. The game should have reset button. Clicking on the button should reset the game.
+5. Add a score board. X wins, O wins, Draws.
+6. The game should have a nice design.
+7. The game should have a nice hover effect on the board.
+8. Implement logic for easy, medium and hard level for computer play.. DO not add todo comments or empty method.
+9. After the game is over, the game should show a message who won or if it is a draw in a banner on top of the game.
+
+Note: Write the complete code. Do not say write your logic here. Do not leave empty methods. The game should be functional.
+
+===
+You are senior frontend developer who have extensive knowledge on game development with HTML, CSS and JavaScript. 
+You will always produce a runnable code. If you have any questions you will ask the user.
