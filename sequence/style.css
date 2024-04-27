@@ -1,0 +1,64 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow: auto; /* Allow scrolling if content overflows */
+    background: #f0f0f0; /* Light grey page background */
+}
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px; /* Add padding to avoid tight edges */
+    overflow: auto; /* Allow scrolling if content overflows */
+}
+
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(10, 80px); /* 10 columns, each 80px wide */
+    grid-template-rows: repeat(10, 120px); /* 10 rows, each 120px high */
+    gap: 10px; /* Larger margin between cells */
+}
+
+.cell {
+    background: #fff; /* White background for cells */
+    position: relative; /* Allows for absolute positioning within the cell */
+}
+
+.cell .card-text-top-left {
+    position: absolute;
+    top: 5px; /* Position at top left */
+    left: 5px;
+    font-size: 12px;
+}
+
+.cell .card-text-bottom-right {
+    position: absolute;
+    bottom: 5px; /* Position at bottom right */
+    right: 5px;
+    font-size: 12px;
+}
+
+.player-hand {
+    display: flex;
+    gap: 10px; /* Space between cards in player's hand */
+    margin-top: 20px;
+}
+
+.card {
+    padding: 10px;
+    background: #fff; /* Background color for cards in player's hand */
+    border: 1px solid #333; /* Border color for cards in hand */
+    cursor: pointer; /* Change cursor to pointer on hover */
+    transition: background 0.3s; /* Transition effect for hover */
+}
+
+.card:hover {
+    background: #eee; /* Change background color on hover */
+}
+
+.discard-pile {
+    margin-top: 20px;
+}
