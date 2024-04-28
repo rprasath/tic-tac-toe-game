@@ -7,20 +7,48 @@ class Card {
     toString() {
         return `${this.rank} of ${this.suit}`;
     }
+
+    getImageFilePath() {
+        return `svgcards/${this.getImageRankFromRank()}_of_${this.suit.toLowerCase()}.svg`;
+    }
+
+    getImageRankFromRank(){
+        if (this.rank === 'A') {
+            return "ace";
+        } else if (this.rank === 'J') {
+            return "jack";
+        } else if (this.rank === 'Q') {
+            return "queen";
+        } else if (this.rank === 'K') {
+            return "king";
+        } else {
+            return this.rank;
+        }
+    }
+
+    getSuit() {
+        return this.suit;
+    }
+
+    getRank() {
+        return this.rank;
+    }
 }
 
 class Deck {
     constructor() {
         this.suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
         this.ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
-        this.cards = this.createDeck();
+        this.cards = this.createDeck(2);
     }
 
-    createDeck() {
+    createDeck(numberOfSets) {
         const deck = [];
-        for (const suit of this.suits) {
-            for (const rank of this.ranks) {
-                deck.push(new Card(suit, rank));
+        for (let i = 0; i < numberOfSets; i++) {
+            for (const suit of this.suits) {
+                for (const rank of this.ranks) {
+                    deck.push(new Card(suit, rank));
+                }
             }
         }
         return deck;

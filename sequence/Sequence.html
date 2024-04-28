@@ -1,30 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Sequence Game</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-</head>
-<body>
-    <div class="game-container">
-        <!-- Game board container -->
-        <div class="game-board" id="game-board">
-            <!-- The 10x10 grid board will be created with JavaScript -->
-        </div>
-        
-        <!-- Player hand container -->
-        <div class="player-hand" id="player-hand">
-            <!-- Player's cards will be displayed here -->
-        </div>
-        
-        <!-- Discard pile container -->
-        <div class="discard-pile" id="discard-pile">
-            <!-- Discard pile for played cards -->
-            Discard Pile
-        </div>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+  <body>
+    <!-- Smaller Header -->
+    <header>
+      <h1>Sequence</h1>
+    </header>
+
+    <!-- Scrollable Game Board Container -->
+    <div class="page-container">
+        <div class="game-board-container">
+        <div class="game-board" id="game-board"></div>
     </div>
-    
+
+      <!-- Player Info Section (Fixed at the Bottom) -->
+      <div class="player-info">
+        <h2>Player 1</h2>
+        <div class="player-hand" id="player-hand"></div>
+      </div>
+    </div>
+    <!-- Scripts -->
     <script src="deck.js"></script>
     <script src="game.js"></script>
-</body>
+  </body>
 </html>

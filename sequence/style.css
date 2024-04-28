@@ -1,64 +1,93 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    overflow: auto; /* Allow scrolling if content overflows */
-    background: #f0f0f0; /* Light grey page background */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  background: #f0f0f0;
+  box-sizing: border-box;
+  height: 100%;
+  font-family: Arial, sans-serif;
 }
 
-.game-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px; /* Add padding to avoid tight edges */
-    overflow: auto; /* Allow scrolling if content overflows */
+header {
+  width: 100%;
+  background-color: #f8f8f8;
+  text-align: center;
+  padding: 10px 0;
+  /* box-shadow: 0px 4px 2px -2px gray; */
+}
+
+h1 {
+  margin: 0;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.game-board-container {
+  flex: 0 0 60%;
+  display: flex;
+  justify-content: center; /* Center the content horizontally */
+  align-items: center; /* Center the content vertically */
+  min-height: 400px;
+  margin-right: 20px;
 }
 
 .game-board {
-    display: grid;
-    grid-template-columns: repeat(10, 80px); /* 10 columns, each 80px wide */
-    grid-template-rows: repeat(10, 120px); /* 10 rows, each 120px high */
-    gap: 10px; /* Larger margin between cells */
+  display: grid;
+  grid-template-columns: repeat(10, 40px);
+  grid-template-rows: repeat(10, 60px);
+  gap: 5px;
+  position: relative;
 }
 
 .cell {
-    background: #fff; /* White background for cells */
-    position: relative; /* Allows for absolute positioning within the cell */
+  background-size: auto 100%;
+  background-position: center;
+  overflow: hidden;
+  position: relative;
 }
 
-.cell .card-text-top-left {
-    position: absolute;
-    top: 5px; /* Position at top left */
-    left: 5px;
-    font-size: 12px;
+.cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
-.cell .card-text-bottom-right {
-    position: absolute;
-    bottom: 5px; /* Position at bottom right */
-    right: 5px;
-    font-size: 12px;
+.player-info {
+  flex: 0 0 40%;
+  min-height: 400px;
 }
 
 .player-hand {
-    display: flex;
-    gap: 10px; /* Space between cards in player's hand */
-    margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(6, 40px);
+  grid-template-rows: repeat(1, 60px);
+  gap: 5px;
+  position: relative;
 }
 
-.card {
-    padding: 10px;
-    background: #fff; /* Background color for cards in player's hand */
-    border: 1px solid #333; /* Border color for cards in hand */
-    cursor: pointer; /* Change cursor to pointer on hover */
-    transition: background 0.3s; /* Transition effect for hover */
+.player-info h2 {
+  color: blue;
 }
 
-.card:hover {
-    background: #eee; /* Change background color on hover */
+.chip {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-.discard-pile {
-    margin-top: 20px;
+.chip-blue {
+  background-color: blue;
+}
+
+.chip-red {
+  background-color: red;
 }
