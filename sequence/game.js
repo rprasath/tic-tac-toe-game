@@ -9,8 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let currentPlayer = 0;
     let jackMode = {
-        action : null,
-        playerDeckIndex : null
+        action: null,
+        playerDeckIndex: null
     };
 
     const players = [
@@ -36,12 +36,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function resetJackMode() {
         jackMode = {
-            action : null,
-            playerDeckIndex : null
+            action: null,
+            playerDeckIndex: null
         };
     }
 
     function nextTurn() {
+        currentPlayer = (currentPlayer + 1) % players.length;
+        resetJackMode();
+
+        // updatePlayerInfo();
+        // if (players[currentPlayer].hand.length < 6) {
+        //     players[currentPlayer].hand.push(deck.deal(1)[0]);
+        // }
+        //drawPlayerHand(playerHand, players[currentPlayer].hand);
+
+        computerMove(players, board);
+
         currentPlayer = (currentPlayer + 1) % players.length;
         updatePlayerInfo();
         resetJackMode();
@@ -70,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function checkWin() {
+    function checkWin(player, board) {
         const boardSize = 10;
         const chipsToWin = 5; // Assuming this is the required number of chips for a win
         const directions = [
@@ -79,28 +90,28 @@ document.addEventListener("DOMContentLoaded", () => {
             [1, 1], // Diagonal (down-right)
             [1, -1], // Diagonal (down-left)
         ];
-    
-        const chipColor = players[currentPlayer].chipColor; // Current player's chip color
-    
+
+        const chipColor = player.chipColor; // Current player's chip color
+
         // Loop through each cell in the game board
         for (let row = 0; row < boardSize; row++) {
             for (let col = 0; col < boardSize; col++) {
                 const cell = board[row][col];
-                
+
                 // If the cell has a chip of the current player's color
                 if (cell.hasChip && cell.querySelector(`.chip-${chipColor}`)) {
                     // Check each direction to count the sequence of chips
                     for (const [dx, dy] of directions) {
                         let sequenceCount = 1; // Include the starting cell
-    
+
                         for (let step = 1; step < chipsToWin; step++) {
                             const newRow = row + dx * step;
                             const newCol = col + dy * step;
-    
+
                             // Ensure the new position is within the board's bounds
                             if (newRow >= 0 && newRow < boardSize && newCol >= 0 && newCol < boardSize) {
                                 const nextCell = board[newRow][newCol];
-                                
+
                                 // Check if the adjacent cell has a chip of the same color
                                 if (nextCell.hasChip && nextCell.querySelector(`.chip-${chipColor}`)) {
                                     sequenceCount++;
@@ -111,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 break; // Out of board bounds
                             }
                         }
-    
+
                         // If the required sequence count is met, return true for a win
                         if (sequenceCount >= chipsToWin) {
                             return true;
@@ -120,10 +131,185 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         }
-    
+
         return false; // No winning sequence found
     }
-    
+
+    function computerMove(players, board) {
+        const boardSize = 10;
+        const computerPlayer = players[1]; // Assuming the computer is player 2 (index 1)
+        const player = players[0]; // Human player
+        const directions = [
+            [0, 1], // Horizontal
+            [1, 0], // Vertical
+            [1, 1], // Diagonal (down-right)
+            [1, -1], // Diagonal (down-left)
+        ];
+
+        // Function to find sequences on the board
+        function findSequences(chipColor) {
+            const sequences = [];
+            for (let row = 0; row < boardSize; row++) {
+                for (let col = 0; col < boardSize; col++) {
+                    const cell = board[row][col];
+                    if (cell.hasChip && cell.querySelector(`.chip-${chipColor}`)) {
+                        directions.forEach(([dx, dy]) => {
+                            let sequence = [cell]; // Store the current sequence
+                            for (let step = 1; step < boardSize; step++) {
+                                const newRow = row + dx * step;
+                                const newCol = col + dy * step;
+
+                                if (newRow >= 0 && newRow < boardSize && newCol >= 0 && newCol < boardSize) {
+                                    const nextCell = board[newRow][newCol];
+                                    if (nextCell.hasChip && nextCell.querySelector(`.chip-${chipColor}`)) {
+                                        sequence.push(nextCell);
+                                    } else {
+                                        break;
+                                    }
+                                } else {
+                                    break;
+                                }
+                            }
+                            if (sequence.length >= 2) {
+                                sequences.push(sequence); // Only consider sequences with at least 2 chips
+                            }
+                        });
+                    }
+                }
+            }
+            return sequences;
+        }
+
+        const computerSequences = findSequences(computerPlayer.chipColor);
+        const playerSequences = findSequences(player.chipColor);
+
+        // 1. Check for a winning move (complete a sequence of 5)
+        for (const card of computerPlayer.hand) {
+            const cell = board.flat().find(c => c.deckCard.suit === card.suit && c.deckCard.rank === card.rank);
+            if (cell && !cell.hasChip) {
+                placeChip(cell, computerPlayer.chipColor);
+                if (checkWin(computerPlayer, board)) {
+                    alert(`Player ${currentPlayer + 1} wins!`);
+                    return true; // Winning move
+                }
+                removeChip(cell); // Undo if not winning
+            }
+        }
+
+        // 2. Block opponent's winning move
+        for (const card of computerPlayer.hand) {
+            const cell = board.flat().find(c => c.deckCard.suit === card.suit && c.deckCard.rank === card.rank);
+            if (cell && !cell.hasChip) {
+                placeChip(cell, player.chipColor); // Place as if player did
+                if (checkWin(player, board)) {
+                    placeChip(cell, computerPlayer.chipColor); // If it would win for player, block it
+                    updateHand(computerPlayer, computerPlayer.hand.findIndex(c => c.suit === card.suit && c.rank === card.rank), false);
+                    return false;
+                }
+                removeChip(cell); // Undo if not a win
+            }
+        }
+
+        // 3. Use a Jack to remove a critical chip (Spades/Hearts)
+        const jackRemovalIndex = computerPlayer.hand.findIndex(
+            (card) => card.rank === "J" && (card.suit === "Spades" || card.suit === "Hearts")
+        );
+
+        if (jackRemovalIndex !== -1) {
+            // Find a critical chip to remove
+            const opponentSequence = playerSequences.sort((a, b) => b.length - a.length)[0];
+            if (opponentSequence && opponentSequence.length >= 2) {
+                const cellToRemove = opponentSequence[Math.floor(Math.random() * opponentSequence.length)]; // Remove a random chip from sequence
+                if (cellToRemove.hasChip) {
+                    removeChip(cellToRemove);
+                    updateHand(computerPlayer, jackRemovalIndex, false);
+                    return false; // Indicates a move was made, continue with next turn
+                }
+            }
+        }
+
+        // 4. Use a Jack to place anywhere (Clubs/Diamonds)
+        const jackPlacementIndex = computerPlayer.hand.findIndex(
+            (card) => card.rank === "J" && (card.suit === "Clubs" || card.suit === "Diamonds")
+        );
+
+        if (jackPlacementIndex !== -1) {
+            // Try to complete or extend a sequence
+            const openCells = board.flat().filter((c) => !c.hasChip);
+            if (openCells.length > 0) {
+                // Check for strategic placement to extend or complete a sequence
+                const optimalCell = findOptimalPlacement(computerSequences, openCells, computerPlayer.chipColor);
+
+                if (optimalCell) {
+                    placeChip(optimalCell, computerPlayer.chipColor);
+                    updateHand(computerPlayer, jackPlacementIndex, false);
+                    return false; // Move made
+                }
+            }
+        }
+
+        // 5. Default move: find a random valid cell from the hand and place chip
+        const validCardIndices = computerPlayer.hand.map((card, index) => {
+            const cell = board.flat().find(c => c.deckCard.suit === card.suit && c.deckCard.rank === card.rank);
+            if (cell && !cell.hasChip) return index;
+            return -1;
+        }).filter(index => index >= 0);
+
+        if (validCardIndices.length > 0) {
+            const randomCardIndex = validCardIndices[Math.floor(Math.random() * validCardIndices.length)];
+            const randomCard = computerPlayer.hand[randomCardIndex];
+            const randomCell = board.flat().find(
+                (c) => c.deckCard.suit === randomCard.suit && c.deckCard.rank === randomCard.rank
+            );
+            if (randomCell && !randomCell.hasChip) {
+                placeChip(randomCell, computerPlayer.chipColor);
+                updateHand(computerPlayer, randomCardIndex, false);
+            }
+        }
+
+        return false; // Move completed, but not a winning move
+    }
+
+    // Helper function to find optimal placement for a given set of sequences
+    function findOptimalPlacement(sequences, openCells, chipColor) {
+        // Find a cell that extends or completes a sequence
+        for (const sequence of sequences) {
+            for (const direction of directions) {
+                const lastCell = sequence[sequence.length - 1];
+                const [dx, dy] = direction;
+
+                const newRow = lastCell.dataset.row + dx;
+                const newCol = lastCell.dataset.col + dy;
+
+                if (
+                    newRow >= 0 &&
+                    newRow < 10 &&
+                    newCol >= 0 &&
+                    newCol < 10 &&
+                    !board[newRow][newCol].hasChip
+                ) {
+                    return board[newRow][newCol]; // Return the first optimal cell found
+                }
+            }
+        }
+
+        // Otherwise, return a random open cell
+        return openCells[Math.floor(Math.random() * openCells.length)];
+    }
+
+    function updateHand(player, currentIndex, checkWinnerAndNextTurn = true) {
+        player.hand.splice(currentIndex, 1);
+        player.hand.push(deck.deal(1)[0]);
+
+        if (checkWinnerAndNextTurn) {
+            if (checkWin(player, board)) {
+                alert(`Player ${currentPlayer + 1} wins!`);
+                return;
+            }
+            nextTurn();
+        }
+    }
+
     // Event listener for clicking on the game board
     gameBoard.addEventListener("click", (e) => {
         const cell = e.target.closest(".cell");
@@ -133,43 +319,26 @@ document.addEventListener("DOMContentLoaded", () => {
         if (jackMode.action) {
             // Handling Jack of Spades/Hearts (removal) and Clubs/Diamonds (placement)
             if (jackMode.action === "remove") {
-                if(!cell.hasChip) return; // Ignore clicks on cells without chips
+                if (!cell.hasChip) return; // Ignore clicks on cells without chips
 
                 removeChip(cell);
-                player.hand.splice(jackMode.playerDeckIndex, 1);
-                player.hand.push(deck.deal(1)[0]);
-
-                nextTurn();
+                updateHand(player, jackMode.playerDeckIndex);
             } else if (jackMode.action === "place") {
-                if(cell.hasChip) return; // Ignore clicks on cells with chips
+                if (cell.hasChip) return; // Ignore clicks on cells with chips
 
                 placeChip(cell, player.chipColor);
-                player.hand.splice(jackMode.playerDeckIndex, 1);
-                player.hand.push(deck.deal(1)[0]);
-                if (checkWin()) {
-                    alert(`Player ${currentPlayer + 1} wins!`);
-                    return;
-                }
-                nextTurn();
+                updateHand(player, jackMode.playerDeckIndex);
             }
             return;
         }
 
-        if(cell.hasChip) return; // Ignore clicks on cells with chips
+        if (cell.hasChip) return; // Ignore clicks on cells with chips
 
         const cardToFind = cell.deckCard;
-
         const cardIndex = player.hand.findIndex(card => card.suit === cardToFind.suit && card.rank === cardToFind.rank);
         if (cardIndex !== -1) { // Card found in player's hand
             placeChip(cell, player.chipColor);
-            player.hand.splice(cardIndex, 1);
-            player.hand.push(deck.deal(1)[0]);
-            if (checkWin()) {
-                alert(`Player ${currentPlayer + 1} wins!`);
-                // ... (handle win scenario) ... 
-            } else {
-                nextTurn();
-            }
+            updateHand(player, cardIndex);
         }
     });
 
@@ -178,9 +347,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!cardElement) return;
 
         const card = cardElement.deckCard;
-         const cardIndex = players[currentPlayer].hand.findIndex(
-                (c) => c.suit === card.suit && c.rank === card.rank
-            );
+        const cardIndex = players[currentPlayer].hand.findIndex(
+            (c) => c.suit === card.suit && c.rank === card.rank
+        );
 
         if (card.rank === "J") {
 
