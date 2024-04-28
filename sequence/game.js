@@ -50,43 +50,59 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function checkWin() {
-        const chipColor = players[currentPlayer].chipColor;
+        const boardSize = 10;
+        const chipsToWin = 5; // Assuming this is the required number of chips for a win
         const directions = [
-            [0, 1], [1, 0], [1, 1], [1, -1]
+            [0, 1], // Horizontal
+            [1, 0], // Vertical
+            [1, 1], // Diagonal (down-right)
+            [1, -1], // Diagonal (down-left)
         ];
-
+    
+        const chipColor = players[currentPlayer].chipColor; // Current player's chip color
+    
+        // Loop through each cell in the game board
         for (let row = 0; row < boardSize; row++) {
             for (let col = 0; col < boardSize; col++) {
                 const cell = board[row][col];
-                if (cell.hasChip && cell.style.backgroundColor === chipColor) {
+                
+                // If the cell has a chip of the current player's color
+                if (cell.hasChip && cell.querySelector(`.chip-${chipColor}`)) {
+                    // Check each direction to count the sequence of chips
                     for (const [dx, dy] of directions) {
-                        let sequenceCount = 1;
-                        for (let i = 1; i < chipsToWin; i++) {
-                            const nextRow = row + i * dx;
-                            const nextCol = col + i * dy;
-                            if (nextRow >= 0 && nextRow < boardSize && nextCol >= 0 && nextCol < boardSize) {
-                                const nextCell = board[nextRow][nextCol];
-                                if (nextCell.hasChip && nextCell.style.backgroundColor === chipColor) {
+                        let sequenceCount = 1; // Include the starting cell
+    
+                        for (let step = 1; step < chipsToWin; step++) {
+                            const newRow = row + dx * step;
+                            const newCol = col + dy * step;
+    
+                            // Ensure the new position is within the board's bounds
+                            if (newRow >= 0 && newRow < boardSize && newCol >= 0 && newCol < boardSize) {
+                                const nextCell = board[newRow][newCol];
+                                
+                                // Check if the adjacent cell has a chip of the same color
+                                if (nextCell.hasChip && nextCell.querySelector(`.chip-${chipColor}`)) {
                                     sequenceCount++;
                                 } else {
-                                    break;
+                                    break; // Break if the sequence is interrupted
                                 }
                             } else {
-                                break;
+                                break; // Out of board bounds
                             }
                         }
-                        if (sequenceCount === chipsToWin) {
-                            players[currentPlayer].sequences++;
-                            if (players[currentPlayer].sequences >= chipsToWin) {
-                                return true;
-                            }
+    
+                        // If the required sequence count is met, return true for a win
+                        if (sequenceCount >= chipsToWin) {
+                            return true;
                         }
                     }
                 }
             }
         }
-        return false;
+    
+        return false; // No winning sequence found
     }
+    
 
     // Event listener for clicking on the game board
     gameBoard.addEventListener("click", (e) => {
