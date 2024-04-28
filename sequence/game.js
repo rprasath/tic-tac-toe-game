@@ -8,11 +8,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const board = createGameBoard(gameBoard, boardSize, getBoardLayout());
 
     let currentPlayer = 0;
+    let jackMode = {
+        action : null,
+        playerDeckIndex : null
+    };
+
     const players = [
         { hand: [], chipColor: "blue", sequences: 0 },
         { hand: [], chipColor: "red", sequences: 0 },
     ];
-    const chipsToWin = 2;
 
     function startGame() {
         for (let i = 0; i < 6; i++) {
@@ -30,12 +34,19 @@ document.addEventListener("DOMContentLoaded", () => {
         playerInfo.style.color = players[currentPlayer].chipColor;
     }
 
+    function resetJackMode() {
+        jackMode = {
+            action : null,
+            playerDeckIndex : null
+        };
+    }
+
     function nextTurn() {
         currentPlayer = (currentPlayer + 1) % players.length;
         updatePlayerInfo();
+        resetJackMode();
         if (players[currentPlayer].hand.length < 6) {
             players[currentPlayer].hand.push(deck.deal(1)[0]);
-            drawPlayerHand(playerHand, players[currentPlayer].hand);
         }
         drawPlayerHand(playerHand, players[currentPlayer].hand);
     }
@@ -46,6 +57,16 @@ document.addEventListener("DOMContentLoaded", () => {
             chip.classList.add("chip", `chip-${color}`); // Add chip class and color-specific class
             cell.appendChild(chip);
             cell.hasChip = true;
+        }
+    }
+
+    function removeChip(cell) {
+        if (cell.hasChip) {
+            const chip = cell.querySelector(".chip");
+            if (chip) {
+                cell.removeChild(chip);
+                cell.hasChip = false;
+            }
         }
     }
 
@@ -103,26 +124,89 @@ document.addEventListener("DOMContentLoaded", () => {
         return false; // No winning sequence found
     }
     
-
     // Event listener for clicking on the game board
     gameBoard.addEventListener("click", (e) => {
         const cell = e.target.closest(".cell");
-        if (!cell || cell.hasChip) return; // Ignore clicks if not on a cell or if cell has a chip
+        if (!cell) return; // Ignore clicks if not on a cell
+
+        const player = players[currentPlayer];
+        if (jackMode.action) {
+            // Handling Jack of Spades/Hearts (removal) and Clubs/Diamonds (placement)
+            if (jackMode.action === "remove") {
+                if(!cell.hasChip) return; // Ignore clicks on cells without chips
+
+                removeChip(cell);
+                player.hand.splice(jackMode.playerDeckIndex, 1);
+                player.hand.push(deck.deal(1)[0]);
+
+                nextTurn();
+            } else if (jackMode.action === "place") {
+                if(cell.hasChip) return; // Ignore clicks on cells with chips
+
+                placeChip(cell, player.chipColor);
+                player.hand.splice(jackMode.playerDeckIndex, 1);
+                player.hand.push(deck.deal(1)[0]);
+                if (checkWin()) {
+                    alert(`Player ${currentPlayer + 1} wins!`);
+                    return;
+                }
+                nextTurn();
+            }
+            return;
+        }
+
+        if(cell.hasChip) return; // Ignore clicks on cells with chips
 
         const cardToFind = cell.deckCard;
 
-        const cardIndex = players[currentPlayer].hand.findIndex(card => card.suit === cardToFind.suit && card.rank === cardToFind.rank);
+        const cardIndex = player.hand.findIndex(card => card.suit === cardToFind.suit && card.rank === cardToFind.rank);
         if (cardIndex !== -1) { // Card found in player's hand
-            placeChip(cell, players[currentPlayer].chipColor);
-            players[currentPlayer].hand.splice(cardIndex, 1);
-            players[currentPlayer].hand.push(deck.deal(1)[0]); // Replace the card
-            drawPlayerHand(playerHand, players[currentPlayer].hand);
+            placeChip(cell, player.chipColor);
+            player.hand.splice(cardIndex, 1);
+            player.hand.push(deck.deal(1)[0]);
             if (checkWin()) {
                 alert(`Player ${currentPlayer + 1} wins!`);
                 // ... (handle win scenario) ... 
             } else {
                 nextTurn();
             }
+        }
+    });
+
+    playerHand.addEventListener("click", (e) => {
+        const cardElement = e.target.closest(".cell");
+        if (!cardElement) return;
+
+        const card = cardElement.deckCard;
+         const cardIndex = players[currentPlayer].hand.findIndex(
+                (c) => c.suit === card.suit && c.rank === card.rank
+            );
+
+        if (card.rank === "J") {
+
+            //if already selected, unselect
+            if (cardElement.classList.contains("selected")) {
+                cardElement.classList.remove("selected");
+                resetJackMode();
+                return;
+            }
+
+            // Determine the type of Jack
+            const isSpadesOrHearts = card.suit === "Spades" || card.suit === "Hearts";
+            const isClubsOrDiamonds = card.suit === "Clubs" || card.suit === "Diamonds";
+
+            if (isSpadesOrHearts) {
+                jackMode.action = "remove"; // Jack for removal
+                jackMode.playerDeckIndex = cardIndex;
+            } else if (isClubsOrDiamonds) {
+                jackMode.action = "place"; // Jack for placement
+                jackMode.playerDeckIndex = cardIndex;
+            }
+
+            cardElement.classList.add("selected");
+        }
+        else {
+            resetJackMode();
         }
     });
 
