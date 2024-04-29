@@ -64,4 +64,8 @@ class Deck {
     deal(numberOfCards) {
         return this.cards.splice(0, numberOfCards);
     }
+
+    dealOne() {
+        return this.cards.shift();
+    }
 }

@@ -14,16 +14,17 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const players = [
-        { hand: [], chipColor: "blue", sequences: 0 },
-        { hand: [], chipColor: "red", sequences: 0 },
+        { hand: [], chipColor: "blue" },
+        { hand: [], chipColor: "red" },
     ];
 
     function startGame() {
         for (let i = 0; i < 6; i++) {
-            players.forEach(player => player.hand.push(deck.deal(1)[0]));
+            players.forEach(player => player.hand.push(deck.dealOne()));
         }
+
         currentPlayer = 0;
-        players.forEach(player => player.sequences = 0);
+
         drawPlayerHand(playerHand, players[currentPlayer].hand);
         updatePlayerInfo();
     }
@@ -45,19 +46,14 @@ document.addEventListener("DOMContentLoaded", () => {
         currentPlayer = (currentPlayer + 1) % players.length;
         resetJackMode();
 
-        // updatePlayerInfo();
-        // if (players[currentPlayer].hand.length < 6) {
-        //     players[currentPlayer].hand.push(deck.deal(1)[0]);
-        // }
-        //drawPlayerHand(playerHand, players[currentPlayer].hand);
-
+        //llmComputerMove(players, board);
         computerMove(players, board);
 
         currentPlayer = (currentPlayer + 1) % players.length;
         updatePlayerInfo();
         resetJackMode();
         if (players[currentPlayer].hand.length < 6) {
-            players[currentPlayer].hand.push(deck.deal(1)[0]);
+            players[currentPlayer].hand.push(deck.dealOne());
         }
         drawPlayerHand(playerHand, players[currentPlayer].hand);
     }
@@ -68,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
             chip.classList.add("chip", `chip-${color}`); // Add chip class and color-specific class
             cell.appendChild(chip);
             cell.hasChip = true;
+            cell.chipColor = color;
         }
     }
 
@@ -77,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (chip) {
                 cell.removeChild(chip);
                 cell.hasChip = false;
+                cell.chipColor = null;
             }
         }
     }
@@ -136,6 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function computerMove(players, board) {
+        
         const boardSize = 10;
         const computerPlayer = players[1]; // Assuming the computer is player 2 (index 1)
         const player = players[0]; // Human player
@@ -299,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateHand(player, currentIndex, checkWinnerAndNextTurn = true) {
         player.hand.splice(currentIndex, 1);
-        player.hand.push(deck.deal(1)[0]);
+        player.hand.push(deck.dealOne());
 
         if (checkWinnerAndNextTurn) {
             if (checkWin(player, board)) {
@@ -412,11 +411,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 cell.deckCard = card;
-                cell.setAttribute("data-card-suit", card.getSuit());
-                cell.setAttribute("data-card-rank", card.getRank());
+                cell.hasChip = false;
+                cell.chipColor = null;
 
                 container.appendChild(cell);
-                cell.hasChip = false;
                 row.push(cell);
             }
             board.push(row);
@@ -427,19 +425,17 @@ document.addEventListener("DOMContentLoaded", () => {
     function drawPlayerHand(container, hand) {
         container.innerHTML = "";
         hand.forEach((card) => {
-            const cardElement = document.createElement("div");
-            cardElement.classList.add("cell");
+            const cell = document.createElement("div");
+            cell.classList.add("cell");
 
             const img = document.createElement("img");
             img.src = card.getImageFilePath();
             img.alt = card.getImageRankFromRank() + " of " + card.getSuit().toLowerCase();
-            cardElement.appendChild(img);
+            cell.appendChild(img);
 
-            cardElement.setAttribute("data-card-suit", card.getSuit());
-            cardElement.setAttribute("data-card-rank", card.getRank());
-            cardElement.deckCard = card;
+            cell.deckCard = card;
 
-            container.appendChild(cardElement);
+            container.appendChild(cell);
         });
     }
 
