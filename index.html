@@ -1,184 +1,186 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Dashboard</title>
-    <style>
-        :root {
-            --background-light: #f5f5f5;
-            --background-dark: #121212;
-            --sidebar-light: #ffffff;
-            --sidebar-dark: #1f1f1f;
-            --card-light: #ffffff;
-            --card-dark: #2c2c2c;
-            --text-light: #000000;
-            --text-dark: #ffffff;
-            --primary-light: #4a90e2;
-            --primary-dark: #1e73e8;
-            --button-hover-light: #417cbf;
-            --button-hover-dark: #155edb;
-        }
+<style>
+    :root {
+        --background-light: #f5f5f5;
+        --background-dark: #121212;
+        --sidebar-light: #ffffff;
+        --sidebar-dark: #1f1f1f;
+        --card-light: #ffffff;
+        --card-dark: #2c2c2c;
+        --text-light: #000000;
+        --text-dark: #ffffff;
+        --primary-light: #3a7bd5; /* Changed to a less bright color */
+        --primary-dark: #1e73e8;
+        --button-hover-light: #417cbf;
+        --button-hover-dark: #155edb;
+        --highlight-light: #ffcc00; /* Changed to a less bright yellow */
+        --highlight-dark: #ffcc00;
+        --header-light: #ffffff; /* Keep header background white in light mode */
+        --header-text-light: #3a7bd5; /* Same color as game title */
+    }
 
-        [data-theme="dark"] {
-            --background-light: var(--background-dark);
-            --sidebar-light: var(--sidebar-dark);
-            --card-light: var(--card-dark);
-            --text-light: var(--text-dark);
-            --primary-light: var(--primary-dark);
-            --button-hover-light: var(--button-hover-dark);
-        }
+    [data-theme="dark"] {
+        --background-light: var(--background-dark);
+        --sidebar-light: var(--sidebar-dark);
+        --card-light: var(--card-dark);
+        --text-light: var(--text-dark);
+        --primary-light: var(--primary-dark);
+        --button-hover-light: var(--button-hover-dark);
+        --highlight-light: var(--highlight-dark);
+    }
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: var(--background-light);
-            color: var(--text-light);
-            transition: background-color 0.3s, color 0.3s;
-            display: flex;
-            height: 100vh;
-        }
+    html {
+        transition: background-color 0.3s, color 0.3s;
+    }
 
-        .sidebar {
-            width: 250px;
-            background-color: var(--sidebar-light);
-            padding: 20px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            transition: width 0.3s ease;
-        }
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: var(--background-light);
+        color: var(--text-light);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
 
-        .sidebar.collapsed {
-            width: 60px;
-        }
+    .header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: var(--background-light);
+        color: var(--highlight-light);
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-        .sidebar h2 {
-            font-size: 20px;
-            margin-bottom: 20px;
-            white-space: nowrap;
-        }
+    [data-theme="light"] .header {
+        background-color: var(--header-light);
+        color: var(--header-text-light);
+    }
 
-        .menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+    .main-content {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background-color: var(--background-light);
+    }
 
-        .menu li {
-            margin-bottom: 15px;
-        }
+    .dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
 
-        .menu a {
-            text-decoration: none;
-            color: var(--text-light);
-            font-size: 16px;
-            display: block;
-            padding: 10px;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
+    .game-card {
+        background: var(--card-light);
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
 
-        .menu a:hover {
-            background-color: var(--primary-light);
-            color: #fff;
-        }
+    .game-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
 
-        .main-content {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background-color: var(--background-light);
-            transition: margin-left 0.3s ease;
-        }
+    .game-details {
+        padding: 15px;
+        flex-grow: 1;
+    }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: var(--primary-light);
-            color: white;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+    .game-details h3 {
+        margin: 0 0 10px 0;
+        color: var(--primary-light);
+    }
 
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
+    .game-details p {
+        font-size: 14px;
+        margin: 0 0 10px 0;
+        color: var(--text-light);
+    }
 
-        .game-card {
-            background: var(--card-light);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
+    .play-button {
+        background-color: var(--primary-light);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s, transform 0.3s;
+        text-align: center;
+    }
 
-        .game-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
+    .play-button:hover {
+        background-color: var(--button-hover-light);
+        transform: scale(1.05);
+    }
 
-        .game-details {
-            padding: 15px;
-            flex-grow: 1;
-        }
+    .theme-toggle {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 28px;
+        margin-left: auto; /* Align to the right */
+    }
 
-        .game-details h3 {
-            margin: 0 0 10px 0;
-            color: var(--primary-light);
-        }
+    .theme-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
 
-        .game-details p {
-            font-size: 14px;
-            margin: 0 0 10px 0;
-            color: var(--text-light);
-        }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--primary-light);
+        transition: 0.4s;
+        border-radius: 28px;
+    }
 
-        .play-button {
-            background-color: var(--primary-light);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-            text-align: center;
-        }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
 
-        .play-button:hover {
-            background-color: var(--button-hover-light);
-        }
+    input:checked + .slider {
+        background-color: var(--primary-dark);
+    }
 
-        .theme-toggle, .sidebar-toggle {
-            cursor: pointer;
-            padding: 5px 10px;
-            border: none;
-            background: var(--primary-light);
-            color: white;
-            border-radius: 5px;
-            margin: 0 5px;
-        }
-    </style>
+    input:checked + .slider:before {
+        transform: translateX(22px);
+    }
+</style>
 </head>
 <body>
-    <div class="sidebar">
-        <h2>GenAI Games</h2>
-        <ul class="menu">
-            <li><a href="#">All Games</a></li>
-            <li><a href="#">Action</a></li>
-            <li><a href="#">Adventure</a></li>
-            <li><a href="#">Strategy</a></li>
-            <li><a href="#">Sports</a></li>
-        </ul>
+    <div class="header">
+        <h1 style="flex-grow: 1; text-align: center;">GEN AI Games</h1>
+        <label class="theme-toggle">
+            <input type="checkbox" onclick="toggleTheme()">
+            <span class="slider"></span>
+        </label>
     </div>
 
     <div class="main-content">
@@ -193,8 +195,8 @@
             <div class="game-card">
                 <div class="game-details">
                     <h3>Sequence</h3>
-                    <p>Strategize and form rows of five consecutive colored chips in this challenging game.</p>
-                    <button class="play-button" onclick="navigateToGame('sequence/Sequence.html')">Play Now</button>
+                    <p>A strategic game where you aim to create a sequence of five chips in a row.</p>
+                    <button class="play-button" onclick="navigateToGame('sequence/index.html')">Play Now</button>
                 </div>
             </div>
         </div>
@@ -202,17 +204,22 @@
 
     <script>
         function toggleTheme() {
-            document.body.toggleAttribute('data-theme', 'dark');
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
         }
 
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            sidebar.classList.toggle('collapsed');
+        function navigateToGame(url) {
+            window.location.href = url;
         }
 
-        function navigateToGame(gameUrl) {
-            window.location.href = gameUrl;
-        }
+        // Set the initial theme based on the system preference
+        window.addEventListener('DOMContentLoaded', () => {
+            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const html = document.documentElement;
+            html.setAttribute('data-theme', prefersDarkScheme ? 'dark' : 'light');
+        });
     </script>
 </body>
 </html>
