@@ -1,0 +1,134 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #1e1e1e; /* Dark background */
+    color: #fff; /* Light text color */
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 1em;
+    color: #fff; /* Light text color */
+  }
+
+  .game-container {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    align-items: center;
+    background-color: #2a2a2a; /* Darker container background */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .game-content {
+    /* New container for board and info */
+    display: flex;
+    width: 100%;
+  }
+
+  .game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 10px;
+    margin-right: 20px; /* Add spacing between board and info */
+  }
+
+  .cell {
+    width: 100px;
+    height: 100px;
+    border: 2px solid #444; /* Darker borders */
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #333; /* Darker cell background */
+    color: #fff; /* Light text color in cells */
+  }
+
+  .cell:hover {
+    background-color: #555; /* Hover effect */
+  }
+
+  .game-info {
+    display: flex;
+    flex-direction: column; /* Change to column for vertical layout */
+    align-items: center; /* Center items within the info section */
+    text-align: center;
+    justify-content: space-around; 
+  }
+
+  .difficulty-select {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+  }
+
+  .score-board {
+    background-color: #3a3a3a; /* Dark score board background */
+    padding: 15px;
+    border-radius: 8px;
+    text-align: left;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  .score-board h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    color: #fff; /* Light text color for scoreboard header */
+  }
+
+  .score-board div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0;
+    font-size: 1.1em;
+    color: #ccc; /* Lighter text color for scoreboard items */
+  }
+
+  .message-banner {
+    background-color: #444; /* Dark message banner */
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    display: none;
+    margin-bottom: 20px;
+  }
+
+  .reset-button,
+  .difficulty-select select {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #4caf50; /* Green button color */
+    color: white;
+    transition: background-color 0.3s ease;
+    margin-bottom: 10px;
+  }
+
+  .reset-button:hover,
+  .difficulty-select select:hover {
+    background-color: #45a049;
+  }
+
+  .difficulty-select {
+    display: flex;
+    align-items: center;
+  }
+
+  .difficulty-select label {
+    margin-right: 10px;
+    color: #fff; /* Light label text */
+  }

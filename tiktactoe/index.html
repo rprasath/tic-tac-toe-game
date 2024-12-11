@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tic Tac Toe</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+  <body>
+    <h1>TIC TAC TOE</h1>
+    <div class="game-container">
+      <div class="message-banner"></div>
+      <div class="game-content">
+        <div class="game-board">
+          <div class="cell" data-index="0"></div>
+          <div class="cell" data-index="1"></div>
+          <div class="cell" data-index="2"></div>
+          <div class="cell" data-index="3"></div>
+          <div class="cell" data-index="4"></div>
+          <div class="cell" data-index="5"></div>
+          <div class="cell" data-index="6"></div>
+          <div class="cell" data-index="7"></div>
+          <div class="cell" data-index="8"></div>
+        </div>
+
+        <div class="game-info">
+          <button class="reset-button">Reset Game</button>
+          <div class="difficulty-select">
+            <label for="difficulty">Difficulty:</label>
+            <select id="difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="score-board">
+            <h4>Scoreboard</h4>
+            <div>X Wins: <span id="x-wins">0</span></div>
+            <div>O Wins: <span id="o-wins">0</span></div>
+            <div>Draws: <span id="draws">0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+     <!-- Scripts -->
+     <script src="genai.js"></script>
+     <!-- <script src="local.js"></script> -->
+  </body>
+</html>

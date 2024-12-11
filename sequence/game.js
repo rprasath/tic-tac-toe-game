@@ -46,8 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
         currentPlayer = (currentPlayer + 1) % players.length;
         resetJackMode();
 
-        //llmComputerMove(players, board);
-        computerMove(players, board);
+        llmComputerMove(players, board);
+        //computerMove(players, board);
 
         currentPlayer = (currentPlayer + 1) % players.length;
         updatePlayerInfo();
@@ -131,6 +131,108 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         return false; // No winning sequence found
+    }
+
+    async function llmComputerMove(players, board) {
+        let computerPlayer = players[1];
+
+        let currentBoardState = board.map((e, idx) => {
+            return e.map((f, idx2) => {
+                return {
+                    row: idx,
+                    column: idx2,
+                    hasChip: f.hasChip,
+                    chipColor: f.chipColor,
+                    suit: f.deckCard.suit,
+                    rank: f.deckCard.rank
+                };
+            });
+        });
+
+        let computerHand = computerPlayer.hand.map((e, index) => {
+            return {
+                index: index,
+                suit: e.suit,
+                rank: e.rank
+            };
+        });
+
+        //Build LLM context object to make http request
+        var requestBody = {
+            "model": "llama3.2:latest",
+            "prompt": `We are playing a game of Sequence. It is your turn. You are the red player. 
+            
+            You have to play a card from your hand to the board. You can only play a card if it is in your hand. Please provide the index of the card in your hand that you want to play, the row and column of the cell on the board where you want to play the card, and whether you want to place or remove the card.
+
+            You have the following cards in hand: ${JSON.stringify(computerHand)}. 
+            
+            The board state shows the current state of the board. Each cell on the board has a card. If the hasChip field is true, it means that the cell has a chip. If the color of the chip is blue it means that the other player has placed a chip on that cell. If the color of the chip is red it means that the you have placed a chip on that cell.
+            You can only place a chip on a cell that does not have a chip. You can only remove a chip from a cell that has a chip.
+
+            The board state is as follows: ${JSON.stringify(currentBoardState)} \r\n'
+
+            The next move response should be in json format. Next move Json response format below.
+            {
+               boardObjectRow: 0// row field from above Multi-dimensional array index
+               boardObjectColumn: 0 // column field from above Multi-dimensional array index
+               action: "place" // or "remove"
+            }
+
+            ex:
+            hand = [{index: 0, suit: "Spades", rank: "3"}, {index: 1, suit: "Hearts", rank: "2"}]
+            board = [
+                [{row: 0, column: 0, hasChip: false, chipColor: null, suit: "Spades", rank: "2"}, {row: 0, column: 1, hasChip: false, chipColor: null, suit: "Spades", rank: "3"}],
+                [{row: 1, column: 0, hasChip: false, chipColor: null, suit: "Hearts", rank: "A"}, {row: 1, column: 1, hasChip: false, chipColor: null, suit: "Hearts", rank: "2"}]
+            ]
+            response:
+            You want to play Hearts 2 from your hand to row 1 column 1 then the response should be
+
+            {
+                boardObjectRow: 1
+                boardObjectColumn: 1
+                action: "place"
+            }
+        
+            
+            What is your next move?`,
+            "stream": false,
+            "format": "json"
+        };
+
+        //Make http request to LLM API
+        //make fetch request with await and set the chip
+
+        var resp = await fetch('http://localhost:11434/api/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        var data = await resp.json();
+
+        var compMove = JSON.parse(data.response);
+
+        if (compMove.action === "place") {
+
+            var cell = board[compMove.boardObjectRow][compMove.boardObjectColumn];
+            let handIndex = computerPlayer.hand.findIndex((e) => e.suit === cell.deckCard.suit && e.rank === cell.deckCard.rank);
+
+            placeChip(cell, computerPlayer.chipColor);
+            updateHand(computerPlayer, handIndex, false);
+        }
+        else {
+            var cell = board[compMove.boardObjectRow][compMove.boardObjectColumn];
+            let handIndex = computerPlayer.hand.findIndex((e) => e.suit === cell.deckCard.suit && e.rank === cell.deckCard.rank);
+            
+            removeChip(cell);
+            updateHand(computerPlayer, handIndex, false);
+        }
+
+        console.log("State of the board before move: ", currentBoardState);
+        console.log("Computer hand before move: ", computerHand);
+        console.log("Move made by computer: ", compMove);
     }
 
     function computerMove(players, board) {
