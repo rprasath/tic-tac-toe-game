@@ -45,12 +45,18 @@ document.addEventListener("DOMContentLoaded", () => {
     async function computerMove() {
       let bestMove;
 
+      var boardAPI = board.map((cell) => {
+        if(!cell) return "-";
+
+        return cell;
+      });
+
       var resp = await fetch('http://localhost:5103/tictactoe/nextMove', {
           method: 'POST',
           headers: {  
               'Content-Type': 'application/json',
           },
-          body: JSON.stringify(board),
+          body: JSON.stringify(boardAPI),
       });
 
       var data = await resp.json();

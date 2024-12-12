@@ -46,7 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
         currentPlayer = (currentPlayer + 1) % players.length;
         resetJackMode();
 
-        computerMove(players, board);
+        llmComputerMove(players, board);
+        //computerMove(players, board);
 
         currentPlayer = (currentPlayer + 1) % players.length;
         updatePlayerInfo();
@@ -132,167 +133,106 @@ document.addEventListener("DOMContentLoaded", () => {
         return false; // No winning sequence found
     }
 
-    function computerMove(players, board) {
+    async function llmComputerMove(players, board) {
+        let computerPlayer = players[1];
+
+        let currentBoardState = board.map((e, idx) => {
+            return e.map((f, idx2) => {
+                return {
+                    row: idx,
+                    column: idx2,
+                    hasChip: f.hasChip,
+                    chipColor: f.chipColor,
+                    suit: f.deckCard.suit,
+                    rank: f.deckCard.rank
+                };
+            });
+        });
+
+        let computerHand = computerPlayer.hand.map((e, index) => {
+            return {
+                index: index,
+                suit: e.suit,
+                rank: e.rank
+            };
+        });
+
+        //Build LLM context object to make http request
+        var requestBody = {
+            "model": "llama3.2:latest",
+            "prompt": `We are playing a game of Sequence. It is your turn. You are the red player. 
+            
+            You have to play a card from your hand to the board. You can only play a card if it is in your hand. Please provide the index of the card in your hand that you want to play, the row and column of the cell on the board where you want to play the card, and whether you want to place or remove the card.
+
+            You have the following cards in hand: ${JSON.stringify(computerHand)}. 
+            
+            The board state shows the current state of the board. Each cell on the board has a card. If the hasChip field is true, it means that the cell has a chip. If the color of the chip is blue it means that the other player has placed a chip on that cell. If the color of the chip is red it means that the you have placed a chip on that cell.
+            You can only place a chip on a cell that does not have a chip. You can only remove a chip from a cell that has a chip.
+
+            The board state is as follows: ${JSON.stringify(currentBoardState)} \r\n'
+
+            The next move response should be in json format. Next move Json response format below.
+            {
+               boardObjectRow: 0// row field from above Multi-dimensional array index
+               boardObjectColumn: 0 // column field from above Multi-dimensional array index
+               action: "place" // or "remove"
+            }
+
+            ex:
+            hand = [{index: 0, suit: "Spades", rank: "3"}, {index: 1, suit: "Hearts", rank: "2"}]
+            board = [
+                [{row: 0, column: 0, hasChip: false, chipColor: null, suit: "Spades", rank: "2"}, {row: 0, column: 1, hasChip: false, chipColor: null, suit: "Spades", rank: "3"}],
+                [{row: 1, column: 0, hasChip: false, chipColor: null, suit: "Hearts", rank: "A"}, {row: 1, column: 1, hasChip: false, chipColor: null, suit: "Hearts", rank: "2"}]
+            ]
+            response:
+            You want to play Hearts 2 from your hand to row 1 column 1 then the response should be
+
+            {
+                boardObjectRow: 1
+                boardObjectColumn: 1
+                action: "place"
+            }
         
-        const boardSize = 10;
-        const computerPlayer = players[1]; // Assuming the computer is player 2 (index 1)
-        const player = players[0]; // Human player
-        const directions = [
-            [0, 1], // Horizontal
-            [1, 0], // Vertical
-            [1, 1], // Diagonal (down-right)
-            [1, -1], // Diagonal (down-left)
-        ];
+            
+            What is your next move?`,
+            "stream": false,
+            "format": "json"
+        };
 
-        // Function to find sequences on the board
-        function findSequences(chipColor) {
-            const sequences = [];
-            for (let row = 0; row < boardSize; row++) {
-                for (let col = 0; col < boardSize; col++) {
-                    const cell = board[row][col];
-                    if (cell.hasChip && cell.querySelector(`.chip-${chipColor}`)) {
-                        directions.forEach(([dx, dy]) => {
-                            let sequence = [cell]; // Store the current sequence
-                            for (let step = 1; step < boardSize; step++) {
-                                const newRow = row + dx * step;
-                                const newCol = col + dy * step;
+        //Make http request to LLM API
+        //make fetch request with await and set the chip
 
-                                if (newRow >= 0 && newRow < boardSize && newCol >= 0 && newCol < boardSize) {
-                                    const nextCell = board[newRow][newCol];
-                                    if (nextCell.hasChip && nextCell.querySelector(`.chip-${chipColor}`)) {
-                                        sequence.push(nextCell);
-                                    } else {
-                                        break;
-                                    }
-                                } else {
-                                    break;
-                                }
-                            }
-                            if (sequence.length >= 2) {
-                                sequences.push(sequence); // Only consider sequences with at least 2 chips
-                            }
-                        });
-                    }
-                }
-            }
-            return sequences;
+        var resp = await fetch('http://localhost:11434/api/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        var data = await resp.json();
+
+        var compMove = JSON.parse(data.response);
+
+        if (compMove.action === "place") {
+
+            var cell = board[compMove.boardObjectRow][compMove.boardObjectColumn];
+            let handIndex = computerPlayer.hand.findIndex((e) => e.suit === cell.deckCard.suit && e.rank === cell.deckCard.rank);
+
+            placeChip(cell, computerPlayer.chipColor);
+            updateHand(computerPlayer, handIndex, false);
+        }
+        else {
+            var cell = board[compMove.boardObjectRow][compMove.boardObjectColumn];
+            let handIndex = computerPlayer.hand.findIndex((e) => e.suit === cell.deckCard.suit && e.rank === cell.deckCard.rank);
+            
+            removeChip(cell);
+            updateHand(computerPlayer, handIndex, false);
         }
 
-        const computerSequences = findSequences(computerPlayer.chipColor);
-        const playerSequences = findSequences(player.chipColor);
-
-        // 1. Check for a winning move (complete a sequence of 5)
-        for (const card of computerPlayer.hand) {
-            const cell = board.flat().find(c => c.deckCard.suit === card.suit && c.deckCard.rank === card.rank);
-            if (cell && !cell.hasChip) {
-                placeChip(cell, computerPlayer.chipColor);
-                if (checkWin(computerPlayer, board)) {
-                    alert(`Player ${currentPlayer + 1} wins!`);
-                    return true; // Winning move
-                }
-                removeChip(cell); // Undo if not winning
-            }
-        }
-
-        // 2. Block opponent's winning move
-        for (const card of computerPlayer.hand) {
-            const cell = board.flat().find(c => c.deckCard.suit === card.suit && c.deckCard.rank === card.rank);
-            if (cell && !cell.hasChip) {
-                placeChip(cell, player.chipColor); // Place as if player did
-                if (checkWin(player, board)) {
-                    placeChip(cell, computerPlayer.chipColor); // If it would win for player, block it
-                    updateHand(computerPlayer, computerPlayer.hand.findIndex(c => c.suit === card.suit && c.rank === card.rank), false);
-                    return false;
-                }
-                removeChip(cell); // Undo if not a win
-            }
-        }
-
-        // 3. Use a Jack to remove a critical chip (Spades/Hearts)
-        const jackRemovalIndex = computerPlayer.hand.findIndex(
-            (card) => card.rank === "J" && (card.suit === "Spades" || card.suit === "Hearts")
-        );
-
-        if (jackRemovalIndex !== -1) {
-            // Find a critical chip to remove
-            const opponentSequence = playerSequences.sort((a, b) => b.length - a.length)[0];
-            if (opponentSequence && opponentSequence.length >= 2) {
-                const cellToRemove = opponentSequence[Math.floor(Math.random() * opponentSequence.length)]; // Remove a random chip from sequence
-                if (cellToRemove.hasChip) {
-                    removeChip(cellToRemove);
-                    updateHand(computerPlayer, jackRemovalIndex, false);
-                    return false; // Indicates a move was made, continue with next turn
-                }
-            }
-        }
-
-        // 4. Use a Jack to place anywhere (Clubs/Diamonds)
-        const jackPlacementIndex = computerPlayer.hand.findIndex(
-            (card) => card.rank === "J" && (card.suit === "Clubs" || card.suit === "Diamonds")
-        );
-
-        if (jackPlacementIndex !== -1) {
-            // Try to complete or extend a sequence
-            const openCells = board.flat().filter((c) => !c.hasChip);
-            if (openCells.length > 0) {
-                // Check for strategic placement to extend or complete a sequence
-                const optimalCell = findOptimalPlacement(computerSequences, openCells, computerPlayer.chipColor);
-
-                if (optimalCell) {
-                    placeChip(optimalCell, computerPlayer.chipColor);
-                    updateHand(computerPlayer, jackPlacementIndex, false);
-                    return false; // Move made
-                }
-            }
-        }
-
-        // 5. Default move: find a random valid cell from the hand and place chip
-        const validCardIndices = computerPlayer.hand.map((card, index) => {
-            const cell = board.flat().find(c => c.deckCard.suit === card.suit && c.deckCard.rank === card.rank);
-            if (cell && !cell.hasChip) return index;
-            return -1;
-        }).filter(index => index >= 0);
-
-        if (validCardIndices.length > 0) {
-            const randomCardIndex = validCardIndices[Math.floor(Math.random() * validCardIndices.length)];
-            const randomCard = computerPlayer.hand[randomCardIndex];
-            const randomCell = board.flat().find(
-                (c) => c.deckCard.suit === randomCard.suit && c.deckCard.rank === randomCard.rank
-            );
-            if (randomCell && !randomCell.hasChip) {
-                placeChip(randomCell, computerPlayer.chipColor);
-                updateHand(computerPlayer, randomCardIndex, false);
-            }
-        }
-
-        return false; // Move completed, but not a winning move
-    }
-
-    // Helper function to find optimal placement for a given set of sequences
-    function findOptimalPlacement(sequences, openCells, chipColor) {
-        // Find a cell that extends or completes a sequence
-        for (const sequence of sequences) {
-            for (const direction of directions) {
-                const lastCell = sequence[sequence.length - 1];
-                const [dx, dy] = direction;
-
-                const newRow = lastCell.dataset.row + dx;
-                const newCol = lastCell.dataset.col + dy;
-
-                if (
-                    newRow >= 0 &&
-                    newRow < 10 &&
-                    newCol >= 0 &&
-                    newCol < 10 &&
-                    !board[newRow][newCol].hasChip
-                ) {
-                    return board[newRow][newCol]; // Return the first optimal cell found
-                }
-            }
-        }
-
-        // Otherwise, return a random open cell
-        return openCells[Math.floor(Math.random() * openCells.length)];
+        console.log("State of the board before move: ", currentBoardState);
+        console.log("Computer hand before move: ", computerHand);
+        console.log("Move made by computer: ", compMove);
     }
 
     function updateHand(player, currentIndex, checkWinnerAndNextTurn = true) {
