@@ -42,8 +42,8 @@ h1 {
 
 .game-board {
   display: grid;
-  grid-template-columns: repeat(10, 80px);
-  grid-template-rows: repeat(10, 55px);
+  grid-template-columns: repeat(10, 55px);
+  grid-template-rows: repeat(10, 80px);
   gap: 2px;
   position: relative;
 }
@@ -68,8 +68,8 @@ h1 {
 
 .player-hand {
   display: grid;
-  grid-template-columns: repeat(6, 80px);
-  grid-template-rows: repeat(6, 55px);
+  grid-template-columns: repeat(6, 60px);
+  grid-template-rows: repeat(6, 80px);
   gap: 5px;
   position: relative;
 }
